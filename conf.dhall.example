@@ -1,0 +1,21 @@
+-- Change things here (name needs to be UPPERCASE, this is currnetly a limitataion in dhall)
+   -- Cache servers
+   let caches = [ { name="STEAM", ip="10.0.0.1", disk="1000000m", mem="1000m" }
+   	   		  	, { name="RIOT", ip="10.0.0.2", disk="1000000m", mem="1000m" }
+   				, { name="BLIZZARD", ip="10.0.0.3", disk="1000000m", mem="1000m" }
+				]
+   -- DNS Server
+in let dnscnf = {ip="10.0.0.1", servers=caches, upstream="10.0.0.1"}
+-- End of user config
+
+in let map = ./Prelude/List/map
+in let head = ./Prelude/List/head
+in let makeCache = ./CacheContainer.dhall
+in let makeDNS = ./DNSContainer.dhall
+in let Input = { name :Text, ip :Text, disk :Text, mem :Text }
+in let Output = { mapKey :Text, mapValue :./ContainerTypes.dhall }
+in let dns = makeDNS dnscnf
+in {
+   version = "3",
+   services = (map Input Output makeCache caches) # [ { mapKey="dns", mapValue=dns } ]
+}
